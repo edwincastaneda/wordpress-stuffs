@@ -1,0 +1,150 @@
+<?php 
+// CUSTOM FIELDS HORARIOS
+function horarios_meta_box_add()
+{
+    add_meta_box( 'horarios-meta-box-id1', 'Horario de Emisión', 'horarios_meta_box_form', 'horarios', 'normal', 'high' );
+    add_meta_box( 'horarios-meta-box-id2', 'Redireccionar', 'redireccionar_meta_box_form', 'horarios', 'normal', 'high' );
+    add_meta_box( 'horarios-meta-box-id3', 'Plantilla de Programa', 'programa_meta_box_form', 'page', 'normal', 'high' );
+}
+
+add_action( 'add_meta_boxes', 'horarios_meta_box_add' );
+
+function horarios_meta_box_form( $post ){
+global $post;
+
+$prepend = array('00','01','02','03','04','05','06','07','08','09');
+$hours     = array_merge($prepend,range(10, 23));
+$minutes     = array_merge($prepend,range(10, 59));
+
+
+$values = get_post_custom( $post->ID );
+$inicio_hora = isset( $values['horarios_inicio_hora'] ) ? esc_attr( $values['horarios_inicio_hora'][0] ) : '';
+$inicio_minuto = isset( $values['horarios_inicio_minuto'] ) ? esc_attr( $values['horarios_inicio_minuto'][0] ) : '';
+$fin_hora = isset( $values['horarios_fin_hora'] ) ? esc_attr( $values['horarios_fin_hora'][0] ) : '';
+$fin_minuto = isset( $values['horarios_fin_minuto'] ) ? esc_attr( $values['horarios_fin_minuto'][0] ) : '';
+
+
+    ?>
+
+<p>
+<table>
+    <tr>
+        <td>
+            <label>DESDE LAS:</label>
+        </td>
+        <td>
+            <select name="horarios_inicio_hora" id="horarios_inicio_hora">
+                <?php foreach($hours as $horas){?>
+                <option value="<?php echo $horas;?>" <?php selected( $inicio_hora,  $horas); ?>><?php echo $horas;?></option>
+                <?php } ?>
+            </select>
+        </td>
+        <td>:</td>
+        <td><select name="horarios_inicio_minuto" id="horarios_inicio_minuto">
+                <?php foreach($minutes as $minutos){?>
+                <option value="<?php echo $minutos;?>" <?php selected( $inicio_minuto,  $minutos); ?>><?php echo $minutos;?></option>
+                <?php } ?>
+            </select>
+        </td>
+        <td>Hrs.</td>
+    </tr>
+    <tr>
+        <td>
+            <label>HASTA LAS:</label>
+        </td>
+        <td>
+            <select name="horarios_fin_hora" id="horarios_fin_hora">
+                <?php foreach($hours as $horas){?>
+                <option value="<?php echo $horas;?>" <?php selected( $fin_hora,  $horas); ?>><?php echo $horas;?></option>
+                <?php } ?>
+            </select>
+        </td>
+        <td>:</td>
+        <td>
+            <select name="horarios_fin_minuto" id="horarios_fin_minuto">
+                <?php foreach($minutes as $minutos){?>
+                <option value="<?php echo $minutos;?>" <?php selected( $fin_minuto,  $minutos); ?>><?php echo $minutos;?></option>
+                <?php } ?>
+            </select>
+        </td>
+        <td>Hrs.</td>
+    </tr>
+</table>
+
+        </p>
+        <p><em>*Formato 24Hrs.</em></p>
+    <?php
+}
+
+
+function redireccionar_meta_box_form( $post )
+{
+global $post;
+$values = get_post_custom( $post->ID );
+$redirect = isset( $values['redirect_horario'] ) ? esc_attr( $values['redirect_horario'][0] ) :'';
+    ?>
+<p>
+    <label for="redirect_horario">Página de Redirección:</label>
+    <select name="redirect_horario" id="redirect_horario">
+        <option value="NO" <?php selected( $redirect,  "NO"); ?>>Sin Redirección</option>
+    <?php
+    //print_r(get_pages($args));
+    foreach(get_pages($args) as $paginas){
+        $pag=get_post_meta($paginas->ID,"es_programa");
+        if($pag[0]=="on"){?>
+            <option value="<?php echo get_permalink($paginas->ID);?>" <?php selected( $redirect,  get_permalink($paginas->ID)); ?>><?php echo $paginas->post_title;?></option>
+       <?php }
+    }?>
+    </select>
+</p>
+
+<?php  }
+
+
+function programa_meta_box_form( $post )
+{
+$values = get_post_custom( $post->ID );
+$es_programa = isset( $values['es_programa'] ) ? esc_attr( $values['es_programa'][0] ) :'';
+
+    ?>
+<p>
+<input type="checkbox" id="es_programa" name="es_programa" <?php checked( $es_programa, 'on' ); ?> />
+<label for="es_programa">¿Convertir en página de Programa?</label> <br/><em>(Si no sabe, no marcarlo)</em>
+</p>
+
+<?php  }
+
+
+
+
+function horarios_meta_box_save( $post_id )
+{
+    // Bail if we're doing an auto save
+    if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+
+
+    if( isset( $_POST['horarios_inicio_hora'] ) )
+        update_post_meta( $post_id, 'horarios_inicio_hora', esc_attr( $_POST['horarios_inicio_hora'], $allowed ) );
+    if( isset( $_POST['horarios_inicio_minuto'] ) )
+        update_post_meta( $post_id, 'horarios_inicio_minuto', esc_attr( $_POST['horarios_inicio_minuto'], $allowed  ) );
+
+    if( isset( $_POST['horarios_fin_hora'] ) )
+        update_post_meta( $post_id, 'horarios_fin_hora', esc_attr( $_POST['horarios_fin_hora'], $allowed  ) );
+    if( isset( $_POST['horarios_fin_minuto'] ) )
+        update_post_meta( $post_id, 'horarios_fin_minuto', esc_attr( $_POST['horarios_fin_minuto'], $allowed  ) );
+
+    if( isset( $_POST['redirect_horario'] ) )
+        update_post_meta( $post_id, 'redirect_horario', esc_attr( $_POST['redirect_horario'], $allowed  ) );
+
+    // This is purely my personal preference for saving check-boxes
+    $chk = isset( $_POST['es_programa'] ) && $_POST['es_programa'] ? 'on' : 'off';
+    update_post_meta( $post_id, 'es_programa', $chk, $allowed  );
+
+
+
+        // if our current user can't edit this post, bail
+    if( !current_user_can( 'edit_post' ) ) return;
+
+}
+
+add_action( 'save_post', 'horarios_meta_box_save' );

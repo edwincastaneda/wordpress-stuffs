@@ -1,0 +1,66 @@
+
+<?php
+
+// AGREGAR COLUMNA UNICAMENTE
+function horarios_columns( $columns ) {
+
+	$columns = array(
+		'cb' => '<input type="checkbox" />',
+		'title' => __( 'Horario' ),
+		'dia' => __( 'Día' ),
+                'horario_ini' => __( 'Hora Inicio' ),
+                'horario_fin' => __( 'Hora Finaliza' ),
+		'date' => __( 'Date' )
+	);
+
+	return $columns;
+}
+
+add_filter( 'manage_edit-horarios_columns', 'horarios_columns' ) ;
+
+// AGREGARLE CONTENIDO A LA COLUMNA
+function manage_horarios_columns( $column, $post_id ) {
+	global $post;
+
+
+	switch( $column ) {
+		case 'dia' :
+			$dia = wp_get_post_terms( $post_id, 'dia', true );
+			if ( empty( $dia ) )
+				echo __( 'Unknown' );
+			else
+				echo $dia[0]->name;
+			break;
+
+                case 'horario_ini':
+                    $hora_ini= get_post_meta($post_id, "horarios_inicio_hora");
+                    $min_ini= get_post_meta($post_id, "horarios_inicio_minuto");
+
+                    echo $hora_ini[0].":".$min_ini[0];
+                    break;
+
+                case 'horario_fin':
+                    $hora_fin= get_post_meta($post_id, "horarios_fin_hora");
+                    $min_fin= get_post_meta($post_id, "horarios_fin_minuto");
+
+                    echo $hora_fin[0].":".$min_fin[0];
+                    break;
+
+		default :
+			break;
+	}
+}
+add_action( 'manage_horarios_posts_custom_column', 'manage_horarios_columns', 10, 2 );
+
+
+// ORDENAR COLUMNAS
+
+function horarios_sortable_columns( $columns ) {
+
+	$columns['dia'] = 'dia';
+        $columns['horario_ini'] = 'horario_ini';
+        $columns['horario_fin'] = 'horario_fin';
+
+	return $columns;
+}
+add_filter( 'manage_edit-horarios_sortable_columns', 'horarios_sortable_columns' );
