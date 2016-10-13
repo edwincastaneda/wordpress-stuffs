@@ -1,0 +1,152 @@
+<?php
+//REMOVER ADMINISTRACION DE CUSTOM FIELDS
+function remove_post_custom_fields() {
+    remove_meta_box('postcustom', 'post', 'normal');
+    remove_meta_box('postcustom', 'page', 'normal');
+    remove_meta_box('postcustom', 'horarios', 'normal');
+    remove_meta_box('postcustom', 'programas', 'normal');
+}
+
+add_action('admin_menu', 'remove_post_custom_fields');
+
+// HORARIOS POST
+function custom_post_type() {
+
+// HORARIOS
+
+    $labels = array(
+        'name' => _x('Horarios'),
+        'singular_name' => _x('Horario'),
+        'menu_name' => __('Horarios'),
+        'parent_item_colon' => __('Horario Padre'),
+        'all_items' => __('Todos los Horarios'),
+        'view_item' => __('Ver Horario'),
+        'add_new_item' => __('Agregar Nuevo Horario'),
+        'add_new' => __('Agregar Nuevo'),
+        'edit_item' => __('Editar Horario'),
+        'update_item' => __('Actualizar Horario'),
+        'search_items' => __('Buscar Horario'),
+        'not_found' => __('Sin Resultados'),
+        'not_found_in_trash' => __('Sin Resultados en la Papelera')
+    );
+
+    $args = array(
+        'label' => __('horarios'),
+        'description' => __('Horarios para programación'),
+        'labels' => $labels,
+        'supports' => array('title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields'),
+        'hierarchical' => false,
+        'public' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_admin_bar' => true,
+        'menu_position' => 5,
+        'can_export' => true,
+        'has_archive' => true,
+        'exclude_from_search' => false,
+        'publicly_queryable' => true,
+        'capability_type' => 'page',
+        'taxonomies' => array('dia', 'tipo'),
+    );
+
+    register_post_type('horarios', $args);
+
+
+// PROGRAMAS
+
+    $labels = array(
+        'name' => _x('Programas'),
+        'singular_name' => _x('Programa'),
+        'menu_name' => __('Programas'),
+        'parent_item_colon' => __('Programa Padre'),
+        'all_items' => __('Todos los Programas'),
+        'view_item' => __('Ver Programa'),
+        'add_new_item' => __('Agregar Nuevo Programa'),
+        'add_new' => __('Agregar Nuevo'),
+        'edit_item' => __('Editar Programa'),
+        'update_item' => __('Actualizar Programa'),
+        'search_items' => __('Buscar Programa'),
+        'not_found' => __('Sin Resultados'),
+        'not_found_in_trash' => __('Sin Resultados en la Papelera')
+    );
+
+// Opciones del tipo de post
+
+    $args = array(
+        'label' => __('programas'),
+        'description' => __('Programas del canal'),
+        'labels' => $labels,
+        'supports' => array('title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields'),
+        'hierarchical' => false,
+        'public' => true,
+        'show_ui' => true,
+        'show_in_menu' => true,
+        'show_in_nav_menus' => true,
+        'show_in_admin_bar' => true,
+        'menu_position' => 5,
+        'can_export' => true,
+        'has_archive' => true,
+        'exclude_from_search' => false,
+        'publicly_queryable' => true,
+        'capability_type' => 'page',
+            // This is where we add taxonomies to our CPT
+            //'taxonomies'          => array( 'category' ),
+            //'taxonomies'		  => array('topics', 'category' ),
+    );
+
+    register_post_type('programas', $args);
+}
+
+add_action('init', 'custom_post_type', 0);
+
+// DIAS PARA HORARIOS
+
+function custom_taxonomies() {
+    $labels = array(
+        'name' => _x('Días de Horarios'),
+        'singular_name' => _x('Día de Horarios'),
+        'search_items' => __('Buscar Día'),
+        'all_items' => __('Todos'),
+        'parent_item' => __('Día Padre'),
+        'parent_item_colon' => __('Día Padre:'),
+        'edit_item' => __('Editar Día'),
+        'update_item' => __('Actualizar Día'),
+        'add_new_item' => __('Agregar Nuevo Día'),
+        'new_item_name' => __('Nuevo Día'),
+        'menu_name' => __('Días de Horarios'),
+    );
+    $args = array(
+        'labels' => $labels,
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_admin_column' => true,
+    );
+    register_taxonomy('dia', 'horarios', $args);
+
+    $labels = array(
+        'name' => _x('Tipos de Programas'),
+        'singular_name' => _x('Tipo de Programas'),
+        'search_items' => __('Buscar Tipo'),
+        'all_items' => __('Todos'),
+        'parent_item' => __('Tipo Padre'),
+        'parent_item_colon' => __('Tipo Padre:'),
+        'edit_item' => __('Editar Tipo'),
+        'update_item' => __('Actualizar Tipo'),
+        'add_new_item' => __('Agregar Nuevo Tipo'),
+        'new_item_name' => __('Nuevo Tipo'),
+        'menu_name' => __('Tipos de Programas'),
+    );
+    $args = array(
+        'labels' => $labels,
+        'hierarchical' => true,
+        'show_ui' => true,
+        'show_admin_column' => true,
+    );
+
+    //register_taxonomy('tipo', 'horarios', $args);
+    //register_taxonomy('tipo', 'programas', $args);
+    register_taxonomy('tipo', array('programas', 'horarios'), $args);
+}
+
+add_action('init', 'custom_taxonomies', 0);
